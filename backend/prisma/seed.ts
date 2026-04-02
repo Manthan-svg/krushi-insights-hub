@@ -99,6 +99,8 @@ async function main() {
       dailyRate: 500,
       available: true,
       location: "Pune",
+      lat: 18.5204,
+      lon: 73.8567,
     },
   });
 
@@ -111,6 +113,8 @@ async function main() {
       dailyRate: 700,
       available: true,
       location: "Nashik",
+      lat: 19.9975,
+      lon: 73.7898,
     },
   });
 
@@ -123,6 +127,8 @@ async function main() {
       dailyRate: 450,
       available: true,
       location: "Kolhapur",
+      lat: 16.7050,
+      lon: 74.2433,
     },
   });
 
@@ -136,6 +142,8 @@ async function main() {
       duration: 7,
       status: "open",
       postedById: farmer1.id,
+      lat: 18.5204,
+      lon: 73.8567,
     },
   });
 
@@ -148,6 +156,8 @@ async function main() {
       duration: 14,
       status: "open",
       postedById: farmer1.id,
+      lat: 16.7050,
+      lon: 74.2433,
     },
   });
 
@@ -198,6 +208,8 @@ async function main() {
       location: "Pune",
       image: "🚜",
       ownerId: eqOwner1.id,
+      lat: 18.5204,
+      lon: 73.8567,
     },
   });
 

@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { authMiddleware, requireRole, AuthRequest } from "../middleware/auth";
+import { filterByRadius } from "../utils/geo";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -8,7 +9,7 @@ const prisma = new PrismaClient();
 // GET /api/jobs — list with optional filters
 router.get("/", async (req, res): Promise<void> => {
   try {
-    const { status, location, q } = req.query as Record<string, string>;
+    const { status, location, q, lat, lon, radius } = req.query as Record<string, string>;
 
     const where: Record<string, unknown> = {};
     if (status) where.status = status;
@@ -38,6 +39,16 @@ router.get("/", async (req, res): Promise<void> => {
       filtered = filtered.filter((j) => j.location.toLowerCase().includes(lower));
     }
 
+    if (lat && lon) {
+      // Radius default: 15km
+      const maxR = radius ? parseFloat(radius) : 15;
+      const refLat = parseFloat(lat);
+      const refLon = parseFloat(lon);
+      if (!isNaN(refLat) && !isNaN(refLon)) {
+        filtered = filterByRadius(filtered, refLat, refLon, maxR) as unknown as typeof filtered;
+      }
+    }
+
     res.json(
       filtered.map((j) => ({
         id: j.id,
@@ -52,6 +63,7 @@ router.get("/", async (req, res): Promise<void> => {
         applicants: j._count.applications,
         postedDate: j.createdAt.toISOString().split("T")[0],
         createdAt: j.createdAt,
+        distance: (j as any).distance, // Include parsed distance
       }))
     );
   } catch (err) {
@@ -100,7 +112,7 @@ router.post(
   requireRole("farmer"),
   async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const { title, description, location, wages, duration } = req.body;
+      const { title, description, location, wages, duration, lat, lon } = req.body;
 
       if (!title || !description || !location || !wages || !duration) {
         res.status(400).json({ error: "All fields are required" });
@@ -114,6 +126,8 @@ router.post(
           location,
           wages: parseFloat(wages),
           duration: parseInt(duration),
+          lat: lat !== undefined ? parseFloat(lat) : null,
+          lon: lon !== undefined ? parseFloat(lon) : null,
           status: "open",
           postedById: req.user!.id,
         },
@@ -160,7 +174,7 @@ router.patch(
         return;
       }
 
-      const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+      const job = await prisma.job.findUnique({ where: { id: req.params.id as string } });
       if (!job) {
         res.status(404).json({ error: "Job not found" });
         return;
@@ -171,7 +185,7 @@ router.patch(
       }
 
       const updated = await prisma.job.update({
-        where: { id: req.params.id },
+        where: { id: req.params.id as string },
         data: { status },
       });
 
@@ -189,7 +203,7 @@ router.delete(
   requireRole("farmer"),
   async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+      const job = await prisma.job.findUnique({ where: { id: req.params.id as string } });
       if (!job) {
         res.status(404).json({ error: "Job not found" });
         return;
@@ -199,8 +213,8 @@ router.delete(
         return;
       }
 
-      await prisma.application.deleteMany({ where: { jobId: req.params.id } });
-      await prisma.job.delete({ where: { id: req.params.id } });
+      await prisma.application.deleteMany({ where: { jobId: req.params.id as string } });
+      await prisma.job.delete({ where: { id: req.params.id as string } });
 
       res.json({ message: "Job deleted successfully" });
     } catch (err) {

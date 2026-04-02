@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { authMiddleware, requireRole, AuthRequest } from "../middleware/auth";
+import { filterByRadius } from "../utils/geo";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -8,7 +9,7 @@ const prisma = new PrismaClient();
 // GET /api/equipment — list with optional filters
 router.get("/", async (req, res): Promise<void> => {
   try {
-    const { available, q, ownerId } = req.query as Record<string, string>;
+    const { available, q, ownerId, lat, lon, radius } = req.query as Record<string, string>;
 
     const where: Record<string, unknown> = {};
     if (available === "true") where.available = true;
@@ -34,6 +35,13 @@ router.get("/", async (req, res): Promise<void> => {
       );
     }
 
+    if (lat && lon) {
+      const maxR = radius ? parseFloat(radius) : 15;
+      const refLat = parseFloat(lat);
+      const refLon = parseFloat(lon);
+      filtered = filterByRadius(filtered, refLat, refLon, maxR) as unknown as typeof filtered;
+    }
+
     res.json(
       filtered.map((e) => ({
         id: e.id,
@@ -48,6 +56,7 @@ router.get("/", async (req, res): Promise<void> => {
         ownerId: e.ownerId,
         ownerPhone: e.owner.phone,
         createdAt: e.createdAt,
+        distance: (e as any).distance,
       }))
     );
   } catch (err) {

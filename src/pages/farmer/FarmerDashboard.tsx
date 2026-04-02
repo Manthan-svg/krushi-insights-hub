@@ -4,46 +4,75 @@ import { useAuth } from "@/contexts/AuthContext";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Briefcase, Users, Wrench, Plus, Loader2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { jobsApi, workersApi, equipmentApi } from "@/lib/api";
+import { FloatingMicButton } from "@/components/FloatingMicButton";
+import { parseJobFromSpeech } from "@/lib/nlp";
+import { speakConfirmation } from "@/lib/speech";
+import { toast } from "sonner";
+import { useLocation } from "@/hooks/use-location";
 
 const FarmerDashboard = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { lat, lon } = useLocation();
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
-    queryKey: ["jobs"],
-    queryFn: () => jobsApi.list(),
+    queryKey: ["jobs", lat, lon],
+    queryFn: () => jobsApi.list({ lat: lat?.toString(), lon: lon?.toString() }),
   });
 
   const { data: workers = [] } = useQuery({
-    queryKey: ["workers"],
-    queryFn: () => workersApi.list(),
+    queryKey: ["workers", lat, lon],
+    queryFn: () => workersApi.list({ lat: lat?.toString(), lon: lon?.toString() }),
   });
 
   const { data: equipment = [] } = useQuery({
-    queryKey: ["equipment"],
-    queryFn: () => equipmentApi.list(),
+    queryKey: ["equipment", lat, lon],
+    queryFn: () => equipmentApi.list({ lat: lat?.toString(), lon: lon?.toString() }),
   });
+
+  const { mutate: quickPostJob } = useMutation({
+    mutationFn: (data: ReturnType<typeof parseJobFromSpeech>) => 
+      jobsApi.create({ ...data, wages: data.wages.toString(), duration: data.duration.toString(), lat: lat, lon: lon }),
+    onSuccess: async () => {
+      toast.success(t.common.success);
+      await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      let msg = t.common.success;
+      if (language === "mr") msg = "काम यशस्वीपणे पोस्ट केले";
+      if (language === "hi") msg = "काम सफलतापूर्वक पोस्ट किया गया";
+      speakConfirmation(msg, language);
+    },
+    onError: (err: unknown) => {
+      toast.error("Failed to post job via voice");
+    }
+  });
+
+  const handleVoiceInput = (text: string) => {
+    const parsed = parseJobFromSpeech(text);
+    quickPostJob(parsed);
+  };
 
   const openJobs = jobs.filter((j: { status: string }) => j.status === "open");
   const availableWorkers = workers.filter((w: { available: boolean }) => w.available);
   const availableEquipment = equipment.filter((e: { available: boolean }) => e.available);
 
+  const myJobs = jobs.filter((j: { postedById: string; applicants?: number }) => j.postedById === user?.id);
+  const totalApplicants = myJobs.reduce((acc: number, job: { applicants?: number }) => acc + (job.applicants || 0), 0);
+
   const stats = [
     { icon: Briefcase, label: t.farmer.activeJobs, value: openJobs.length, color: "bg-primary/10 text-primary" },
-    { icon: Users, label: t.farmer.workers, value: availableWorkers.length, color: "bg-secondary/20 text-secondary" },
+    { icon: Users, label: t.farmer.totalApplicants, value: totalApplicants, color: "bg-secondary/20 text-secondary" },
     { icon: Wrench, label: t.farmer.equipment, value: availableEquipment.length, color: "bg-accent/20 text-accent-foreground" },
   ];
 
-  const myJobs = jobs.filter((j: { postedById: string }) => j.postedById === user?.id);
-
   return (
     <MobileLayout title={t.farmer.dashboard}>
-      <div className="px-4 py-5 space-y-6">
+      <div className="px-4 py-5 space-y-6 flex flex-col relative">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Welcome, {user?.name || "Farmer"} 👋</h2>
+          <h2 className="text-xl font-bold text-foreground">{t.farmer.welcome}, {user?.name || t.roles.farmer} 👋</h2>
           <p className="text-muted-foreground text-sm mt-0.5">{t.app.tagline}</p>
         </div>
 
@@ -89,7 +118,7 @@ const FarmerDashboard = () => {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : myJobs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No jobs posted yet. Post your first job!</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t.farmer.noJobs}</p>
           ) : (
             <div className="space-y-3">
               {myJobs.slice(0, 5).map((job: { id: string; title: string; location: string; status: string; wages: number; duration: number; applicants: number }) => (
@@ -107,13 +136,13 @@ const FarmerDashboard = () => {
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {job.status}
+                        {t.common.status[job.status as keyof typeof t.common.status] || job.status}
                       </span>
                     </div>
                     <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
-                      <span>₹{job.wages}/day</span>
-                      <span>{job.duration} days</span>
-                      <span>{job.applicants} applicants</span>
+                      <span>₹{job.wages}{t.worker.perDay}</span>
+                      <span>{job.duration} {t.farmer.duration?.split(" ")[0]?.toLowerCase() || "days"}</span>
+                      <span>{job.applicants} {t.farmer.applicants}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -122,6 +151,7 @@ const FarmerDashboard = () => {
           )}
         </div>
       </div>
+      <FloatingMicButton onResult={handleVoiceInput} />
     </MobileLayout>
   );
 };

@@ -61,6 +61,15 @@ router.post(
         },
       });
 
+      // Emit socket event to farmer
+      const io = req.app.get("io");
+      if (io) {
+        io.to(job.postedById).emit("notification", {
+          title: "New Job Application",
+          message: `${req.user!.name} applied to "${job.title}"`,
+        });
+      }
+
       res.status(201).json({
         id: application.id,
         jobId: application.jobId,
@@ -166,7 +175,7 @@ router.patch(
       }
 
       const application = await prisma.application.findUnique({
-        where: { id: req.params.id },
+        where: { id: req.params.id as string },
         include: { job: true, worker: { select: { id: true, name: true } } },
       });
 
@@ -180,7 +189,7 @@ router.patch(
       }
 
       const updated = await prisma.application.update({
-        where: { id: req.params.id },
+        where: { id: req.params.id as string },
         data: { status },
       });
 
@@ -192,6 +201,15 @@ router.patch(
           message: `Your application for "${application.job.title}" was ${status}`,
         },
       });
+
+      // Emit socket event to worker
+      const io = req.app.get("io");
+      if (io) {
+        io.to(application.workerId).emit("notification", {
+          title: "Application Update",
+          message: `Your application for "${application.job.title}" was ${status}`,
+        });
+      }
 
       res.json({ id: updated.id, status: updated.status });
     } catch (err) {

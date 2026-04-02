@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { authMiddleware, requireRole, AuthRequest } from "../middleware/auth";
+import { filterByRadius } from "../utils/geo";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -8,7 +9,7 @@ const prisma = new PrismaClient();
 // GET /api/workers — list with optional filters
 router.get("/", async (req, res): Promise<void> => {
   try {
-    const { available, q } = req.query as Record<string, string>;
+    const { available, q, lat, lon, radius } = req.query as Record<string, string>;
 
     const workers = await prisma.user.findMany({
       where: { role: "worker" },
@@ -34,6 +35,18 @@ router.get("/", async (req, res): Promise<void> => {
       );
     }
 
+    if (lat && lon) {
+      const maxR = radius ? parseFloat(radius) : 15;
+      const refLat = parseFloat(lat);
+      const refLon = parseFloat(lon);
+      
+      if (!isNaN(refLat) && !isNaN(refLon)) {
+        // We map the workerProfile lat/lon up to the parent so filterByRadius works
+        const flattenData = filtered.map(w => ({ ...w, lat: w.workerProfile?.lat || null, lon: w.workerProfile?.lon || null }));
+        filtered = filterByRadius(flattenData, refLat, refLon, maxR) as unknown as typeof filtered;
+      }
+    }
+
     res.json(
       filtered.map((w) => ({
         id: w.id,
@@ -46,6 +59,7 @@ router.get("/", async (req, res): Promise<void> => {
         dailyRate: w.workerProfile?.dailyRate || 0,
         available: w.workerProfile?.available ?? true,
         avatar: w.name.split(" ").map((n) => n[0]).join("").toUpperCase(),
+        distance: (w as any).distance,
       }))
     );
   } catch (err) {

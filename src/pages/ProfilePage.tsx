@@ -23,7 +23,7 @@ const ProfilePage = () => {
   const { mutate: updateAvailability } = useMutation({
     mutationFn: (available: boolean) => profileApi.update({ available }),
     onSuccess: () => {
-      toast.success("Availability updated!");
+      toast.success(t.common.success);
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["workers"] });
     },
@@ -68,22 +68,22 @@ const ProfilePage = () => {
         {user?.role === "worker" && profile?.workerProfile && (
           <Card className="border border-border">
             <CardContent className="p-4 space-y-3">
-              <h3 className="font-semibold text-foreground">Worker Profile</h3>
+              <h3 className="font-semibold text-foreground">{t.nav.profile}</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="text-muted-foreground text-xs">Daily Rate</p>
-                  <p className="font-medium">₹{profile.workerProfile.dailyRate}/day</p>
+                  <p className="text-muted-foreground text-xs">{t.farmer.wages}</p>
+                  <p className="font-medium">₹{profile.workerProfile.dailyRate}{t.worker.perDay}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Experience</p>
-                  <p className="font-medium">{profile.workerProfile.experience} years</p>
+                  <p className="text-muted-foreground text-xs">{t.worker.experience}</p>
+                  <p className="font-medium">{profile.workerProfile.experience} {t.farmer.duration.split(" ")[0].toLowerCase()}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Rating</p>
                   <p className="font-medium">⭐ {profile.workerProfile.rating || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Location</p>
+                  <p className="text-muted-foreground text-xs">{t.farmer.location}</p>
                   <p className="font-medium">{profile.workerProfile.location || "—"}</p>
                 </div>
               </div>
@@ -102,7 +102,7 @@ const ProfilePage = () => {
                 className="w-full rounded-xl"
                 onClick={() => updateAvailability(!profile.workerProfile.available)}
               >
-                {profile.workerProfile.available ? "Mark as Unavailable" : "Mark as Available"}
+                {profile.workerProfile.available ? t.worker.available : t.worker.available}
               </Button>
             </CardContent>
           </Card>
@@ -112,7 +112,7 @@ const ProfilePage = () => {
         {user?.role === "farmer" && profile?.recentJobs?.length > 0 && (
           <Card className="border border-border">
             <CardContent className="p-4">
-              <h3 className="font-semibold text-foreground mb-2">Recent Jobs</h3>
+              <h3 className="font-semibold text-foreground mb-2">{t.farmer.myJobs}</h3>
               <div className="space-y-1.5">
                 {profile.recentJobs.map((j: { id: string; title: string; status: string }) => (
                   <div key={j.id} className="flex justify-between text-sm">

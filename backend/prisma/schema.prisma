@@ -26,6 +26,7 @@ model User {
   equipmentItems  EquipmentListing[] @relation("OwnerEquipment")
   applications    Application[]      @relation("WorkerApplications")
   activities      Activity[]
+  rentalRequests  RentalRequest[]    @relation("FarmerRentals")
 }
 
 model Job {
@@ -36,6 +37,8 @@ model Job {
   wages       Float
   duration    Int      // days
   status      String   @default("open") // "open" | "in_progress" | "completed"
+  lat         Float?
+  lon         Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -55,6 +58,8 @@ model WorkerProfile {
   dailyRate  Float    @default(0)
   available  Boolean  @default(true)
   location   String   @default("")
+  lat        Float?
+  lon        Float?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -68,12 +73,15 @@ model EquipmentListing {
   available   Boolean  @default(true)
   location    String
   image       String   @default("⚙️")
+  lat         Float?
+  lon         Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  ownerId String
-  owner   User   @relation("OwnerEquipment", fields: [ownerId], references: [id])
+  ownerId        String
+  owner          User            @relation("OwnerEquipment", fields: [ownerId], references: [id])
+  rentalRequests RentalRequest[]
 }
 
 model Application {
@@ -100,4 +108,19 @@ model Activity {
   // Relations
   userId String
   user   User   @relation(fields: [userId], references: [id])
+}
+
+model RentalRequest {
+  id          String   @id @default(cuid())
+  status      String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  equipmentId String
+  equipment   EquipmentListing @relation(fields: [equipmentId], references: [id])
+  farmerId    String
+  farmer      User   @relation("FarmerRentals", fields: [farmerId], references: [id])
 }

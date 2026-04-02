@@ -9,9 +9,13 @@ import { toast } from "sonner";
 import { jobsApi } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { FloatingMicButton } from "@/components/FloatingMicButton";
+import { parseJobFromSpeech } from "@/lib/nlp";
+import { speakConfirmation } from "@/lib/speech";
+import { useLocation } from "@/hooks/use-location";
 
 const PostJob = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -21,11 +25,19 @@ const PostJob = () => {
   const [location, setLocation] = useState("");
   const [duration, setDuration] = useState("");
 
+  const { lat, lon } = useLocation();
+
   const { mutate: postJob, isPending } = useMutation({
-    mutationFn: () => jobsApi.create({ title, description, location, wages, duration }),
-    onSuccess: () => {
-      toast.success("Job posted successfully!");
-      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    mutationFn: () => jobsApi.create({ title, description, location, wages, duration, lat, lon }),
+    onSuccess: async () => {
+      toast.success(t.common.success);
+      await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      // Speak confirmation
+      let msg = t.common.success;
+      if (language === "mr") msg = "काम यशस्वीपणे पोस्ट केले";
+      if (language === "hi") msg = "काम सफलतापूर्वक पोस्ट किया गया";
+      speakConfirmation(msg, language);
+      
       navigate("/dashboard");
     },
     onError: (err: unknown) => {
@@ -41,6 +53,16 @@ const PostJob = () => {
     postJob();
   };
 
+  const handleVoiceInput = (text: string) => {
+    const parsed = parseJobFromSpeech(text);
+    setTitle(parsed.title);
+    setDescription(parsed.description);
+    setWages(parsed.wages.toString());
+    setDuration(parsed.duration.toString());
+    setLocation(parsed.location);
+    toast.success(t.common.success);
+  };
+
   return (
     <MobileLayout title={t.farmer.postJob} showNav={false}>
       <div className="px-4 py-5">
@@ -48,7 +70,7 @@ const PostJob = () => {
           onClick={() => navigate(-1)}
           className="text-muted-foreground text-sm mb-4 min-h-[44px]"
         >
-          ← Back
+          ← {t.common.cancel}
         </button>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -128,7 +150,7 @@ const PostJob = () => {
             {isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Posting...
+                {t.common.loading}
               </>
             ) : (
               t.farmer.post
@@ -136,6 +158,7 @@ const PostJob = () => {
           </Button>
         </form>
       </div>
+      <FloatingMicButton onResult={handleVoiceInput} />
     </MobileLayout>
   );
 };

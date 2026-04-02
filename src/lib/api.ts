@@ -50,7 +50,7 @@ export const authApi = {
 
 // ── JOBS ──────────────────────────────────────────────────────────────────────
 export const jobsApi = {
-  list: (params?: { status?: string; q?: string; location?: string }) =>
+  list: (params?: { status?: string; q?: string; location?: string; lat?: string; lon?: string; radius?: string }) =>
     api.get("/jobs", { params }).then((r) => r.data),
 
   get: (id: string) => api.get(`/jobs/${id}`).then((r) => r.data),
@@ -61,6 +61,8 @@ export const jobsApi = {
     location: string;
     wages: string | number;
     duration: string | number;
+    lat?: string | number | null;
+    lon?: string | number | null;
   }) => api.post("/jobs", data).then((r) => r.data),
 
   updateStatus: (id: string, status: string) =>
@@ -71,7 +73,7 @@ export const jobsApi = {
 
 // ── WORKERS ───────────────────────────────────────────────────────────────────
 export const workersApi = {
-  list: (params?: { available?: string; q?: string }) =>
+  list: (params?: { available?: string; q?: string; lat?: string; lon?: string; radius?: string }) =>
     api.get("/workers", { params }).then((r) => r.data),
 
   get: (id: string) => api.get(`/workers/${id}`).then((r) => r.data),
@@ -82,7 +84,7 @@ export const workersApi = {
 
 // ── EQUIPMENT ─────────────────────────────────────────────────────────────────
 export const equipmentApi = {
-  list: (params?: { available?: string; q?: string; ownerId?: string }) =>
+  list: (params?: { available?: string; q?: string; ownerId?: string; lat?: string; lon?: string; radius?: string }) =>
     api.get("/equipment", { params }).then((r) => r.data),
 
   get: (id: string) => api.get(`/equipment/${id}`).then((r) => r.data),
@@ -104,17 +106,23 @@ export const equipmentApi = {
 
 // ── APPLICATIONS ──────────────────────────────────────────────────────────────
 export const applicationsApi = {
-  apply: (jobId: string) => api.post("/applications", { jobId }).then((r) => r.data),
+  apply: (jobId: string) => api.post(`/applications`, { jobId }).then(res => res.data),
+  myApplications: () => api.get(`/applications/my`).then(res => res.data),
+  getApplicationsForJob: (jobId: string) => api.get(`/applications/job/${jobId}`).then(res => res.data),
+  updateStatus: (id: string, status: string) => api.patch(`/applications/${id}`, { status }).then(res => res.data),
+};
 
-  myApplications: () => api.get("/applications/my").then((r) => r.data),
-
-  updateStatus: (id: string, status: "accepted" | "rejected") =>
-    api.patch(`/applications/${id}`, { status }).then((r) => r.data),
+export const rentalsApi = {
+  createRequest: (equipmentId: string, startDate?: string, endDate?: string) => 
+    api.post(`/rentals`, { equipmentId, startDate, endDate }).then(res => res.data),
+  list: () => api.get(`/rentals`).then(res => res.data),
+  updateStatus: (id: string, status: string) => api.patch(`/rentals/${id}`, { status }).then(res => res.data),
 };
 
 // ── ACTIVITY ──────────────────────────────────────────────────────────────────
 export const activityApi = {
-  list: () => api.get("/activity").then((r) => r.data),
+  list: () => api.get(`/activity`).then(res => res.data),
+  getStats: () => api.get(`/activity/stats`).then(res => res.data),
 };
 
 // ── PROFILE ───────────────────────────────────────────────────────────────────
