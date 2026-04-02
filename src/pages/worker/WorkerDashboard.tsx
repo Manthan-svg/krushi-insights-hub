@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { jobsApi, applicationsApi } from "@/lib/api";
 import { useLocation } from "@/hooks/use-location";
+import WeatherWidget from "@/components/WeatherWidget";
 
 const WorkerDashboard = () => {
   const { t } = useLanguage();
@@ -58,6 +59,8 @@ const WorkerDashboard = () => {
           <p className="text-muted-foreground text-sm mt-0.5">{t.app.tagline}</p>
         </div>
 
+        <WeatherWidget lat={lat || undefined} lon={lon || undefined} />
+
         <div className="grid grid-cols-3 gap-3">
           {stats.map((s) => (
             <Card key={s.label} className="border-0 shadow-none bg-card">
@@ -106,7 +109,7 @@ const WorkerDashboard = () => {
                           <span className="font-semibold text-primary">
                             ₹{job.wages}{t.worker.perDay}
                           </span>
-                          <span>{job.duration} {t.farmer.duration.split(" ")[0].toLowerCase()}</span>
+                          <span>{job.duration} {t.common.days}</span>
                         </div>
                         <Button
                           size="sm"

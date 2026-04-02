@@ -9,6 +9,7 @@ async function main() {
   // Clear existing data
   await prisma.activity.deleteMany();
   await prisma.application.deleteMany();
+  await prisma.rentalRequest.deleteMany();
   await prisma.job.deleteMany();
   await prisma.equipmentListing.deleteMany();
   await prisma.workerProfile.deleteMany();

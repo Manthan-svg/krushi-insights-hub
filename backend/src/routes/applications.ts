@@ -193,6 +193,13 @@ router.patch(
         data: { status },
       });
 
+      if (status === "accepted") {
+        await prisma.job.update({
+          where: { id: application.job.id },
+          data: { status: "in_progress" },
+        });
+      }
+
       // Notify worker
       await prisma.activity.create({
         data: {

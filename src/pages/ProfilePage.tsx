@@ -76,11 +76,11 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">{t.worker.experience}</p>
-                  <p className="font-medium">{profile.workerProfile.experience} {t.farmer.duration.split(" ")[0].toLowerCase()}</p>
+                  <p className="font-medium">{profile.workerProfile.experience} {t.common.days}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Rating</p>
-                  <p className="font-medium">⭐ {profile.workerProfile.rating || "N/A"}</p>
+                  <p className="text-muted-foreground text-xs">{t.common.rating}</p>
+                  <p className="font-medium">⭐ {profile.workerProfile.rating || "—"}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">{t.farmer.location}</p>
@@ -118,7 +118,7 @@ const ProfilePage = () => {
                   <div key={j.id} className="flex justify-between text-sm">
                     <span className="text-foreground">{j.title}</span>
                     <span className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground capitalize">
-                      {j.status}
+                      {t.common.status[j.status as keyof typeof t.common.status] || j.status}
                     </span>
                   </div>
                 ))}

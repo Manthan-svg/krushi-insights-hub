@@ -1,5 +1,5 @@
 // A super lightweight local NLP for extracting job data from voice inputs
-export const parseJobFromSpeech = (text: string) => {
+export const parseJobFromSpeech = (text: string, lang: string = "en") => {
   const lower = text.toLowerCase();
   
   // Convert devanagari numbers to english numbers for easier parsing
@@ -40,16 +40,28 @@ export const parseJobFromSpeech = (text: string) => {
 
   // Keyword-based Title deduction
   if (normalizedText.match(/harvest|katni|kapni|कापणी|कटाई/)) {
-    title = "Harvesting Job";
+    if (lang === "mr") title = "कापणीचे काम";
+    else if (lang === "hi") title = "कटाई का काम";
+    else title = "Harvesting Job";
   } else if (normalizedText.match(/plant|bovni|perni|पेरणी|बुवाई/)) {
-    title = "Planting Job";
+    if (lang === "mr") title = "पेरणीचे काम";
+    else if (lang === "hi") title = "बुवाई का काम";
+    else title = "Planting Job";
   } else if (normalizedText.match(/clean|saaf|स्वच्छता|सफाई/)) {
-    title = "Field Cleaning";
+    if (lang === "mr") title = "शेतीची स्वच्छता";
+    else if (lang === "hi") title = "खेत की सफाई";
+    else title = "Field Cleaning";
   } else if (normalizedText.match(/spray|फवारणी|छिड़काव/)) {
-    title = "Pesticide Spraying";
+    if (lang === "mr") title = "फवारणीचे काम";
+    else if (lang === "hi") title = "छिड़काव का काम";
+    else title = "Pesticide Spraying";
   } else if (normalizedText.match(/plough|nangarni|naangar|नांगरणी|हलमार्ग/)) {
-    title = "Ploughing Job";
+    if (lang === "mr") title = "नांगरणीचे काम";
+    else if (lang === "hi") title = "जुताई का काम";
+    else title = "Ploughing Job";
   }
 
-  return { title, description: `Auto-generated from voice: "${text}"`, wages, duration, location };
+  const descPrefix = lang === "mr" ? "आवाज द्वारे स्वयंचलित:" : lang === "hi" ? "आवाज द्वारा स्वचालित:" : "Auto-generated from voice:";
+
+  return { title, description: `${descPrefix} "${text}"`, wages, duration, location };
 };

@@ -11,6 +11,9 @@ import { applicationsRouter } from "./routes/applications";
 import { activityRouter } from "./routes/activity";
 import { profileRouter } from "./routes/profile";
 import { rentalsRouter } from "./routes/rentals";
+import { cropScanRouter } from "./routes/crop-scan";
+import { weatherRouter } from "./routes/weather";
+import { ratingsRouter } from "./routes/ratings";
 
 import http from "http";
 import { Server } from "socket.io";
@@ -63,6 +66,9 @@ app.use("/api/applications", applicationsRouter);
 app.use("/api/activity", activityRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/rentals", rentalsRouter);
+app.use("/api/crop-scan", cropScanRouter);
+app.use("/api/weather", weatherRouter);
+app.use("/api/ratings", ratingsRouter);
 
 // Global error handler
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

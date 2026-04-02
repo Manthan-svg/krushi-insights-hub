@@ -46,7 +46,7 @@ const Login = () => {
         onClick={() => navigate("/role-selection")}
         className="text-muted-foreground text-sm mb-8 self-start min-h-[44px]"
       >
-        ← Back
+        ← {t.auth.back}
       </button>
 
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
@@ -100,7 +100,7 @@ const Login = () => {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Logging in...
+                {t.auth.loginLoading}
               </>
             ) : (
               t.auth.login

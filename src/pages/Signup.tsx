@@ -44,7 +44,7 @@ const Signup = () => {
         onClick={() => navigate("/login")}
         className="text-muted-foreground text-sm mb-8 self-start min-h-[44px]"
       >
-        ← Back
+        ← {t.auth.back}
       </button>
 
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
@@ -111,7 +111,7 @@ const Signup = () => {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Minimum 6 characters</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.auth.minCharacters}</p>
           </div>
           <Button
             type="submit"
@@ -121,7 +121,7 @@ const Signup = () => {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating account...
+                {t.auth.signupLoading}
               </>
             ) : (
               t.auth.signup

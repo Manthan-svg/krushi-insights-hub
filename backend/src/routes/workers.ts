@@ -11,22 +11,25 @@ router.get("/", async (req, res): Promise<void> => {
   try {
     const { available, q, lat, lon, radius } = req.query as Record<string, string>;
 
-    const workers = await prisma.user.findMany({
+    const workers = await (prisma as any).user.findMany({
       where: { role: "worker" },
-      include: { workerProfile: true },
+      include: { 
+        workerProfile: true,
+        workerRatings: true
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    let filtered = workers.filter((w) => w.workerProfile !== null);
+    let filtered = workers.filter((w: any) => w.workerProfile !== null);
 
     if (available === "true") {
-      filtered = filtered.filter((w) => w.workerProfile?.available === true);
+      filtered = filtered.filter((w: any) => w.workerProfile?.available === true);
     }
 
     if (q) {
       const lower = q.toLowerCase();
       filtered = filtered.filter(
-        (w) =>
+        (w: any) =>
           w.name.toLowerCase().includes(lower) ||
           w.workerProfile?.location.toLowerCase().includes(lower) ||
           (w.workerProfile?.skills && JSON.parse(w.workerProfile.skills as string).some(
@@ -42,13 +45,13 @@ router.get("/", async (req, res): Promise<void> => {
       
       if (!isNaN(refLat) && !isNaN(refLon)) {
         // We map the workerProfile lat/lon up to the parent so filterByRadius works
-        const flattenData = filtered.map(w => ({ ...w, lat: w.workerProfile?.lat || null, lon: w.workerProfile?.lon || null }));
+        const flattenData = filtered.map((w: any) => ({ ...w, lat: w.workerProfile?.lat || null, lon: w.workerProfile?.lon || null }));
         filtered = filterByRadius(flattenData, refLat, refLon, maxR) as unknown as typeof filtered;
       }
     }
 
     res.json(
-      filtered.map((w) => ({
+      filtered.map((w: any) => ({
         id: w.id,
         name: w.name,
         phone: w.phone,
@@ -56,9 +59,10 @@ router.get("/", async (req, res): Promise<void> => {
         skills: w.workerProfile ? JSON.parse(w.workerProfile.skills as string) : [],
         experience: w.workerProfile?.experience || 0,
         rating: w.workerProfile?.rating || 0,
+        completedJobs: w.workerRatings.length,
         dailyRate: w.workerProfile?.dailyRate || 0,
         available: w.workerProfile?.available ?? true,
-        avatar: w.name.split(" ").map((n) => n[0]).join("").toUpperCase(),
+        avatar: w.name.split(" ").map((n: string) => n[0]).join("").toUpperCase(),
         distance: (w as any).distance,
       }))
     );
@@ -71,7 +75,7 @@ router.get("/", async (req, res): Promise<void> => {
 // GET /api/workers/:id — single worker profile
 router.get("/:id", async (req, res): Promise<void> => {
   try {
-    const worker = await prisma.user.findUnique({
+    const worker = await (prisma as any).user.findUnique({
       where: { id: req.params.id, role: "worker" },
       include: { workerProfile: true },
     });
@@ -92,7 +96,7 @@ router.get("/:id", async (req, res): Promise<void> => {
       rating: worker.workerProfile.rating,
       dailyRate: worker.workerProfile.dailyRate,
       available: worker.workerProfile.available,
-      avatar: worker.name.split(" ").map((n) => n[0]).join("").toUpperCase(),
+      avatar: worker.name.split(" ").map((n: string) => n[0]).join("").toUpperCase(),
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch worker" });

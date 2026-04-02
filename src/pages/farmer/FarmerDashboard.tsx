@@ -1,16 +1,20 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Briefcase, Users, Wrench, Plus, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { jobsApi, workersApi, equipmentApi } from "@/lib/api";
+import { jobsApi, workersApi, equipmentApi, applicationsApi } from "@/lib/api";
 import { FloatingMicButton } from "@/components/FloatingMicButton";
 import { parseJobFromSpeech } from "@/lib/nlp";
 import { speakConfirmation } from "@/lib/speech";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/use-location";
+import WeatherWidget from "@/components/WeatherWidget";
+import { CheckCircle2, Star } from "lucide-react";
+import RatingModal from "@/components/RatingModal";
 
 const FarmerDashboard = () => {
   const { t, language } = useLanguage();
@@ -22,6 +26,11 @@ const FarmerDashboard = () => {
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ["jobs", lat, lon],
     queryFn: () => jobsApi.list({ lat: lat?.toString(), lon: lon?.toString() }),
+  });
+
+  const { data: allApplications = [] } = useQuery({
+    queryKey: ["applications", "farmer"],
+    queryFn: () => applicationsApi.myApplications(),
   });
 
   const { data: workers = [] } = useQuery({
@@ -36,7 +45,7 @@ const FarmerDashboard = () => {
 
   const { mutate: quickPostJob } = useMutation({
     mutationFn: (data: ReturnType<typeof parseJobFromSpeech>) => 
-      jobsApi.create({ ...data, wages: data.wages.toString(), duration: data.duration.toString(), lat: lat, lon: lon }),
+      jobsApi.create({ ...data, wages: data.wages.toString(), duration: data.duration.toString(), lat: lat || undefined, lon: lon || undefined }),
     onSuccess: async () => {
       toast.success(t.common.success);
       await queryClient.invalidateQueries({ queryKey: ["jobs"] });
@@ -50,8 +59,24 @@ const FarmerDashboard = () => {
     }
   });
 
+  const [ratingTarget, setRatingTarget] = useState<{ jobId: string; workerId: string } | null>(null);
+
+  const { mutate: completeJob } = useMutation({
+    mutationFn: (jobId: string) => jobsApi.updateStatus(jobId, "completed"),
+    onSuccess: (_, jobId) => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      // Find the accepted worker for this job to trigger rating
+      const acceptedApp = allApplications.find((a: any) => a.job.id === jobId && a.status === "accepted");
+      if (acceptedApp) {
+        setRatingTarget({ jobId, workerId: acceptedApp.worker.id });
+      } else {
+        toast.success(t.common.success);
+      }
+    }
+  });
+
   const handleVoiceInput = (text: string) => {
-    const parsed = parseJobFromSpeech(text);
+    const parsed = parseJobFromSpeech(text, language);
     quickPostJob(parsed);
   };
 
@@ -75,6 +100,8 @@ const FarmerDashboard = () => {
           <h2 className="text-xl font-bold text-foreground">{t.farmer.welcome}, {user?.name || t.roles.farmer} 👋</h2>
           <p className="text-muted-foreground text-sm mt-0.5">{t.app.tagline}</p>
         </div>
+
+        <WeatherWidget lat={lat || undefined} lon={lon || undefined} />
 
         <div className="grid grid-cols-3 gap-3">
           {stats.map((s) => (
@@ -121,8 +148,8 @@ const FarmerDashboard = () => {
             <p className="text-sm text-muted-foreground text-center py-6">{t.farmer.noJobs}</p>
           ) : (
             <div className="space-y-3">
-              {myJobs.slice(0, 5).map((job: { id: string; title: string; location: string; status: string; wages: number; duration: number; applicants: number }) => (
-                <Card key={job.id} className="border border-border">
+              {myJobs.slice(0, 5).map((job: any) => (
+                <Card key={job.id} className="border border-border overflow-hidden">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
                       <div>
@@ -130,20 +157,32 @@ const FarmerDashboard = () => {
                         <p className="text-xs text-muted-foreground mt-0.5">{job.location}</p>
                       </div>
                       <span
-                        className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                           job.status === "open"
                             ? "bg-primary/10 text-primary"
+                            : job.status === "in_progress"
+                            ? "bg-amber-500/10 text-amber-600"
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {t.common.status[job.status as keyof typeof t.common.status] || job.status}
                       </span>
                     </div>
-                    <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
+                    <div className="flex gap-4 mt-3 text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                       <span>₹{job.wages}{t.worker.perDay}</span>
-                      <span>{job.duration} {t.farmer.duration?.split(" ")[0]?.toLowerCase() || "days"}</span>
+                      <span>{job.duration} {t.common.days}</span>
                       <span>{job.applicants} {t.farmer.applicants}</span>
                     </div>
+
+                    {job.status === "in_progress" && (
+                      <button
+                        onClick={() => completeJob(job.id)}
+                        className="w-full mt-4 h-10 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Mark as Complete & Rate
+                      </button>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -152,6 +191,16 @@ const FarmerDashboard = () => {
         </div>
       </div>
       <FloatingMicButton onResult={handleVoiceInput} />
+      
+      {ratingTarget && (
+        <RatingModal
+          isOpen={!!ratingTarget}
+          onClose={() => setRatingTarget(null)}
+          jobId={ratingTarget.jobId}
+          workerId={ratingTarget.workerId}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ["jobs"] })}
+        />
+      )}
     </MobileLayout>
   );
 };

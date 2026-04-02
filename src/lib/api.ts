@@ -125,6 +125,11 @@ export const activityApi = {
   getStats: () => api.get(`/activity/stats`).then(res => res.data),
 };
 
+export const ratingsApi = {
+  create: (data: { jobId: string; workerId: string; stars: number; comment?: string }) => 
+    api.post("/ratings", data).then(res => res.data),
+};
+
 // ── PROFILE ───────────────────────────────────────────────────────────────────
 export const profileApi = {
   get: () => api.get("/profile").then((r) => r.data),

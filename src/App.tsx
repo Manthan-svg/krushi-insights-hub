@@ -16,6 +16,8 @@ import PostJob from "./pages/farmer/PostJob";
 import SearchPage from "./pages/SearchPage";
 import ActivityPage from "./pages/ActivityPage";
 import ProfilePage from "./pages/ProfilePage";
+import CropScan from "./pages/CropScan";
+import FarmerStats from "./pages/farmer/FarmerStats";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -81,6 +83,22 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/crop-scan"
+                element={
+                  <ProtectedRoute>
+                    <CropScan />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/stats"
+                element={
+                  <ProtectedRoute>
+                    <FarmerStats />
                   </ProtectedRoute>
                 }
               />

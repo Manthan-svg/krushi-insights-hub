@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Loader2, MapPin } from "lucide-react";
+import { Search, Loader2, MapPin, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -106,7 +106,7 @@ const SearchPage = () => {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {job.location} • ₹{job.wages}{t.worker.perDay} • {job.duration} {t.farmer.duration.split(" ")[0].toLowerCase()}
+                      {job.location} • ₹{job.wages}{t.worker.perDay} • {job.duration} {t.common.days}
                     </p>
                     <Button
                       size="sm"
@@ -123,42 +123,74 @@ const SearchPage = () => {
         )}
 
         {(role === "farmer" || !role) && !workersLoading && (
-          <>
-            <div>
-              <h3 className="font-semibold text-foreground mb-3">{t.farmer.workers} ({workers.length})</h3>
-              <div className="space-y-3">
-                {workers.map((w: any) => (
-                  <Card key={w.id} className="border border-border">
-                    <CardContent className="p-4 flex items-center gap-3 relative">
-                       {w.distance !== undefined && (
-                        <div className="absolute top-2 right-2 flex items-center text-[10px] text-primary font-medium bg-primary/10 px-1.5 py-0.5 rounded-md">
-                          <MapPin className="w-2.5 h-2.5 mr-0.5" />
-                          {w.distance.toFixed(1)} km
-                        </div>
-                      )}
-                      <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm mt-2">
+          <div className="space-y-4">
+            <h3 className="font-bold text-foreground flex items-center justify-between">
+              <span>{t.farmer.workers} ({workers.length})</span>
+            </h3>
+            <div className="space-y-3">
+              {workers.map((w: any) => (
+                <Card key={w.id} className="border border-border relative overflow-hidden group active:bg-muted/30 transition-colors">
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-xl shadow-inner border border-primary/5">
                         {w.avatar}
                       </div>
-                      <div className="flex-1 mt-2">
-                        <p className="font-semibold text-foreground">{w.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {w.location} • {w.experience}{t.worker.experience.toLowerCase()} • ⭐ {w.rating}
-                        </p>
-                        <div className="flex gap-1 mt-1 flex-wrap">
-                          {w.skills.slice(0, 3).map((s: string) => (
-                            <Badge key={s} variant="secondary" className="text-[10px]">
-                              {s}
-                            </Badge>
-                          ))}
+                      {w.rating >= 4.5 && w.completedJobs >= 1 && (
+                        <div className="absolute -top-1.5 -right-1.5 bg-blue-500 text-white p-1 rounded-full border-2 border-background shadow-md">
+                          <CheckCircle2 className="w-3 h-3 fill-current" />
                         </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-foreground truncate">{w.name}</h4>
+                        {w.rating >= 4.5 && w.completedJobs >= 1 && (
+                          <Badge variant="outline" className="text-[8px] h-4 border-blue-200 bg-blue-50 text-blue-600 font-black uppercase px-1 tracking-tighter">
+                            Trusted
+                          </Badge>
+                        )}
                       </div>
-                      <span className="text-sm font-bold text-primary mt-2">₹{w.dailyRate}</span>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      
+                      <div className="flex items-center gap-2 text-[10px] sm:text-xs">
+                        <span className="flex items-center gap-0.5 text-amber-600 font-bold">
+                          ★ {w.rating.toFixed(1)}
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-muted-foreground font-medium">
+                          {w.completedJobs} {t.nav.activity}
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-muted-foreground">
+                          {w.experience}y exp
+                        </span>
+                      </div>
+                      
+                      <div className="flex gap-1.5 overflow-x-auto scrollbar-hidden">
+                        {w.skills.slice(0, 3).map((s: string) => (
+                          <Badge key={s} variant="secondary" className="text-[9px] bg-muted/60 text-muted-foreground border-none font-medium px-1.5">
+                            {s}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-black text-primary">₹{w.dailyRate}</p>
+                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{t.worker.perDay}</p>
+                    </div>
+
+                    {w.distance !== undefined && (
+                      <div className="absolute top-2 right-2 flex items-center text-[8px] font-black uppercase tracking-tighter text-primary/70">
+                        <MapPin className="w-2.5 h-2.5 mr-0.5" />
+                        {w.distance.toFixed(1)} km
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </>
+          </div>
         )}
 
         {(role === "farmer" || role === "equipment_owner" || !role) && !eqLoading && (

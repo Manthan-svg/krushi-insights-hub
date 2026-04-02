@@ -90,14 +90,14 @@ const EquipmentOwnerDashboard = () => {
                       <div>
                         <p className="font-semibold text-foreground">{req.equipment.name}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Requested by: <span className="font-medium text-foreground">{req.farmer.name}</span>
+                          {t.common.requestedBy}: <span className="font-medium text-foreground">{req.farmer.name}</span>
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Phone: {req.farmer.phone}
+                          {t.common.phone}: {req.farmer.phone}
                         </p>
                       </div>
                       <Badge variant={req.status === "PENDING" ? "secondary" : req.status === "APPROVED" ? "default" : "destructive"}>
-                        {req.status}
+                        {t.common.status[req.status.toLowerCase() as keyof typeof t.common.status] || req.status}
                       </Badge>
                     </div>
                     {req.status === "PENDING" && (
@@ -154,7 +154,7 @@ const EquipmentOwnerDashboard = () => {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {eq.type} • {eq.location}
+                          {t.equipmentTypes[eq.type.toLowerCase() as keyof typeof t.equipmentTypes] || eq.type} • {eq.location}
                         </p>
                         <p className="text-sm font-semibold text-primary mt-1">
                           ₹{eq.ratePerDay}{t.worker.perDay}

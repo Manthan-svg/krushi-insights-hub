@@ -54,7 +54,7 @@ const PostJob = () => {
   };
 
   const handleVoiceInput = (text: string) => {
-    const parsed = parseJobFromSpeech(text);
+    const parsed = parseJobFromSpeech(text, language);
     setTitle(parsed.title);
     setDescription(parsed.description);
     setWages(parsed.wages.toString());
@@ -100,7 +100,7 @@ const PostJob = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                {t.farmer.wages} (₹/day)
+                {t.farmer.wages} ({t.common.rupees}{t.worker.perDay})
               </label>
               <Input
                 type="number"
@@ -115,7 +115,7 @@ const PostJob = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                {t.farmer.duration} (days)
+                {t.farmer.duration} ({t.common.days})
               </label>
               <Input
                 type="number"

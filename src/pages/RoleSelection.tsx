@@ -54,7 +54,9 @@ const RoleSelection = () => {
               <span className="text-4xl">{role.emoji}</span>
               <div className="text-left">
                 <p className="font-semibold text-foreground text-lg">{roleLabels[role.key]}</p>
-                <p className="text-muted-foreground text-xs">{role.descEn}</p>
+                <p className="text-muted-foreground text-xs">
+                  {role.key === "farmer" ? t.roles.farmerDesc : role.key === "worker" ? t.roles.workerDesc : t.roles.ownerDesc}
+                </p>
               </div>
             </button>
           ))}
