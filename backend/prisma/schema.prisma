@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String
+  password  String
+  role      String   // "farmer" | "worker" | "equipment_owner"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  postedJobs      Job[]              @relation("FarmerJobs")
+  workerProfile   WorkerProfile?
+  equipmentItems  EquipmentListing[] @relation("OwnerEquipment")
+  applications    Application[]      @relation("WorkerApplications")
+  activities      Activity[]
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  location    String
+  wages       Float
+  duration    Int      // days
+  status      String   @default("open") // "open" | "in_progress" | "completed"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  postedById   String
+  postedBy     User          @relation("FarmerJobs", fields: [postedById], references: [id])
+  applications Application[]
+}
+
+model WorkerProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  skills     String   // JSON array stored as string
+  experience Int      @default(0)
+  rating     Float    @default(0)
+  dailyRate  Float    @default(0)
+  available  Boolean  @default(true)
+  location   String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model EquipmentListing {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  description String
+  ratePerDay  Float
+  available   Boolean  @default(true)
+  location    String
+  image       String   @default("⚙️")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ownerId String
+  owner   User   @relation("OwnerEquipment", fields: [ownerId], references: [id])
+}
+
+model Application {
+  id       String   @id @default(cuid())
+  status   String   @default("pending") // "pending" | "accepted" | "rejected"
+  appliedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  jobId    String
+  job      Job    @relation(fields: [jobId], references: [id])
+  workerId String
+  worker   User   @relation("WorkerApplications", fields: [workerId], references: [id])
+
+  @@unique([jobId, workerId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String   // "job_applied" | "job_posted" | "application_accepted" | "application_rejected" | "equipment_listed"
+  message   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}

@@ -2,18 +2,51 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { mockJobs } from "@/data/mockData";
-import { Briefcase, IndianRupee, Star } from "lucide-react";
+import { Briefcase, IndianRupee, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { jobsApi, applicationsApi } from "@/lib/api";
 
 const WorkerDashboard = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const handleApply = (jobTitle: string) => {
-    toast.success(`${t.worker.applied} - ${jobTitle}`);
-  };
+  const { data: openJobs = [], isLoading } = useQuery({
+    queryKey: ["jobs", "open"],
+    queryFn: () => jobsApi.list({ status: "open" }),
+  });
+
+  const { data: myApplications = [] } = useQuery({
+    queryKey: ["applications", "my"],
+    queryFn: () => applicationsApi.myApplications(),
+  });
+
+  const { mutate: applyToJob } = useMutation({
+    mutationFn: (jobId: string) => applicationsApi.apply(jobId),
+    onSuccess: (_data, jobId) => {
+      const job = openJobs.find((j: { id: string; title: string }) => j.id === jobId);
+      toast.success(`Applied to ${job?.title || "job"}!`);
+      queryClient.invalidateQueries({ queryKey: ["applications", "my"] });
+    },
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        "Failed to apply";
+      toast.error(msg);
+    },
+  });
+
+  const appliedJobIds = new Set(
+    myApplications.map((a: { job: { id: string } }) => a.job.id)
+  );
+
+  const stats = [
+    { icon: Briefcase, label: t.worker.browseJobs, value: openJobs.length },
+    { icon: IndianRupee, label: t.worker.earnings, value: `₹${(myApplications.filter((a: {status:string}) => a.status === "accepted").length * 500) || 0}` },
+    { icon: Star, label: "Applications", value: myApplications.length },
+  ];
 
   return (
     <MobileLayout title={t.worker.dashboard}>
@@ -24,18 +57,16 @@ const WorkerDashboard = () => {
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: Briefcase, label: t.worker.browseJobs, value: mockJobs.filter(j => j.status === "open").length },
-            { icon: IndianRupee, label: t.worker.earnings, value: "₹12K" },
-            { icon: Star, label: "Rating", value: "4.5" },
-          ].map((s) => (
+          {stats.map((s) => (
             <Card key={s.label} className="border-0 shadow-none bg-card">
               <CardContent className="p-3 flex flex-col items-center gap-1.5">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary">
                   <s.icon className="w-5 h-5" />
                 </div>
                 <span className="text-xl font-bold text-foreground">{s.value}</span>
-                <span className="text-[10px] text-muted-foreground text-center leading-tight">{s.label}</span>
+                <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                  {s.label}
+                </span>
               </CardContent>
             </Card>
           ))}
@@ -43,26 +74,47 @@ const WorkerDashboard = () => {
 
         <div>
           <h3 className="font-semibold text-foreground mb-3">{t.worker.browseJobs}</h3>
-          <div className="space-y-3">
-            {mockJobs.filter(j => j.status === "open").map((job) => (
-              <Card key={job.id} className="border border-border">
-                <CardContent className="p-4">
-                  <p className="font-semibold text-foreground">{job.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{job.location}</p>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{job.description}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex gap-3 text-xs text-muted-foreground">
-                      <span className="font-semibold text-primary">₹{job.wages}{t.worker.perDay}</span>
-                      <span>{job.duration} days</span>
-                    </div>
-                    <Button size="sm" className="rounded-xl h-9 text-xs" onClick={() => handleApply(job.title)}>
-                      {t.worker.apply}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : openJobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No open jobs right now.</p>
+          ) : (
+            <div className="space-y-3">
+              {openJobs.map((job: { id: string; title: string; location: string; description: string; wages: number; duration: number }) => {
+                const hasApplied = appliedJobIds.has(job.id);
+                return (
+                  <Card key={job.id} className="border border-border">
+                    <CardContent className="p-4">
+                      <p className="font-semibold text-foreground">{job.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{job.location}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {job.description}
+                      </p>
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex gap-3 text-xs text-muted-foreground">
+                          <span className="font-semibold text-primary">
+                            ₹{job.wages}{t.worker.perDay}
+                          </span>
+                          <span>{job.duration} days</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="rounded-xl h-9 text-xs"
+                          onClick={() => applyToJob(job.id)}
+                          disabled={hasApplied}
+                          variant={hasApplied ? "secondary" : "default"}
+                        >
+                          {hasApplied ? "Applied ✓" : t.worker.apply}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </MobileLayout>
