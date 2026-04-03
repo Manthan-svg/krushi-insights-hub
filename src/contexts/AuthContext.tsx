@@ -29,16 +29,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Hydrate from localStorage on mount
+  // Hydrate from sessionStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem("krushi_token");
-    const cachedUser = localStorage.getItem("krushi_user");
+    const token = sessionStorage.getItem("krushi_token");
+    const cachedUser = sessionStorage.getItem("krushi_user");
+    const cachedRole = sessionStorage.getItem("krushi_role");
+
+    if (cachedRole) {
+      setSelectedRole(cachedRole as UserRole);
+    }
 
     if (token && cachedUser) {
       try {
         setUser(JSON.parse(cachedUser));
       } catch {
-        localStorage.removeItem("krushi_user");
+        sessionStorage.removeItem("krushi_user");
       }
 
       // Verify token is still valid against the server
@@ -46,12 +51,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .me()
         .then((serverUser) => {
           setUser(serverUser);
-          localStorage.setItem("krushi_user", JSON.stringify(serverUser));
+          sessionStorage.setItem("krushi_user", JSON.stringify(serverUser));
+          if (!cachedRole) {
+            setSelectedRole(serverUser.role as UserRole);
+            sessionStorage.setItem("krushi_role", serverUser.role);
+          }
         })
         .catch(() => {
           // Token expired / invalid, clear everything
-          localStorage.removeItem("krushi_token");
-          localStorage.removeItem("krushi_user");
+          sessionStorage.removeItem("krushi_token");
+          sessionStorage.removeItem("krushi_user");
+          sessionStorage.removeItem("krushi_role");
           setUser(null);
         })
         .finally(() => setLoading(false));
@@ -62,8 +72,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (email: string, password: string) => {
     const data = await authApi.login(email, password);
-    localStorage.setItem("krushi_token", data.token);
-    localStorage.setItem("krushi_user", JSON.stringify(data.user));
+    sessionStorage.setItem("krushi_token", data.token);
+    sessionStorage.setItem("krushi_user", JSON.stringify(data.user));
+    sessionStorage.setItem("krushi_role", data.user.role);
     setUser(data.user);
     setSelectedRole(data.user.role as UserRole);
   }, []);
@@ -72,16 +83,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     async (name: string, email: string, phone: string, password: string) => {
       if (!selectedRole) throw new Error("No role selected");
       const data = await authApi.register({ name, email, phone, password, role: selectedRole });
-      localStorage.setItem("krushi_token", data.token);
-      localStorage.setItem("krushi_user", JSON.stringify(data.user));
+      sessionStorage.setItem("krushi_token", data.token);
+      sessionStorage.setItem("krushi_user", JSON.stringify(data.user));
+      sessionStorage.setItem("krushi_role", data.user.role);
       setUser(data.user);
     },
     [selectedRole]
   );
 
   const logout = useCallback(() => {
-    localStorage.removeItem("krushi_token");
-    localStorage.removeItem("krushi_user");
+    sessionStorage.removeItem("krushi_token");
+    sessionStorage.removeItem("krushi_user");
+    sessionStorage.removeItem("krushi_role");
     setUser(null);
     setSelectedRole(null);
   }, []);

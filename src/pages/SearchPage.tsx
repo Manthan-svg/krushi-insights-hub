@@ -135,7 +135,7 @@ const SearchPage = () => {
                       <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-xl shadow-inner border border-primary/5">
                         {w.avatar}
                       </div>
-                      {w.rating >= 4.5 && w.completedJobs >= 1 && (
+                      {w.rating >= 4.0 && w.completedJobs >= 5 && (
                         <div className="absolute -top-1.5 -right-1.5 bg-blue-500 text-white p-1 rounded-full border-2 border-background shadow-md">
                           <CheckCircle2 className="w-3 h-3 fill-current" />
                         </div>
@@ -145,7 +145,7 @@ const SearchPage = () => {
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-foreground truncate">{w.name}</h4>
-                        {w.rating >= 4.5 && w.completedJobs >= 1 && (
+                        {w.rating >= 4.0 && w.completedJobs >= 5 && (
                           <Badge variant="outline" className="text-[8px] h-4 border-blue-200 bg-blue-50 text-blue-600 font-black uppercase px-1 tracking-tighter">
                             Trusted
                           </Badge>

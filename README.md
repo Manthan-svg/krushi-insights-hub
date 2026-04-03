@@ -20,17 +20,19 @@ Frontend (React + Socket.io Client) <----> [REST API + WebSocket Server] <----> 
 1. **AI Voice Assistant (`nlp.ts`)**
    - Users can post jobs or search via voice in **English, Hindi, or Marathi**.
    - The NLP engine parses regional numerals and keywords (e.g., "नऊ" for 9, "कापणी" for Harvesting).
-   - If Marathi is selected, the assistant generates job entries with Marathi titles for local workers.
+   - **New**: Enhanced regex boundaries to prevent keyword collision and improved Marathi harvesting detection.
 
 2. **Real-Time Notifications (`Socket.io`)**
    - Instant alerts for job applications and equipment rentals.
-   - Farmers receive a notification whenever a Worker applies or a rental is requested.
-   - Dashboards refresh automatically via TanStack Query invalidation on socket events.
+   - **Improved**: Automatic query invalidation for the activity feed, ensuring real-time UI updates without manual refresh.
 
-3. **GPS-Based Nearby Matching**
-   - Automatically detects user location (with Pune as fallback).
-   - Workers and Equipment are sorted by distance (km) using the Haversine formula directly in the backend `geo.utils`.
-   - Seed data includes realistic Maharashtra coordinates for a demo experience.
+3. **GPS-Based Proximity (`geo.utils`)**
+   - High-accuracy location detection with Pune fallback.
+   - Distances are calculated in **km** and synced across Weather, Job Search, and Equipment Rental.
+
+4. **End-to-End Application Lifecycle**
+   - Farmers can now **Manage Applications** directly from their dashboard (Accept/Reject).
+   - Once a job is accepted, it transitions to `in_progress`, enabling the completion and rating workflow.
 
 ---
 
@@ -41,14 +43,10 @@ All API endpoints are prefixed with `/api`. Protected routes require a valid JWT
 | Endpoint | Method | Role | Description |
 |---|---|---|---|
 | `/auth/login` | `POST` | Any | Authenticate and receive JWT |
-| `/jobs` | `GET` | Any | List jobs (sorted by distance; supports filters) |
-| `/jobs` | `POST` | `farmer` | Create job listing (supports voice parsing) |
-| `/workers` | `GET` | Any | Browse workers nearby (distance-sorted) |
-| `/equipment` | `GET` | Any | Browse equipment listings nearby |
-| `/rentals` | `POST` | `farmer` | Request equipment rental (emits socket alert) |
-| `/rentals/my` | `GET` | Any | List rental requests for owner or farmer |
-| `/applications` | `POST` | `worker` | Apply to a job (emits socket alert to farmer) |
-| `/activity` | `GET` | Any | Localized time-ago chronological feed |
+| `/jobs/:id` | `PATCH` | `farmer` | Update job status (e.g., to `completed`) |
+| `/ratings` | `POST` | `farmer` | Submit worker rating (Authenticated) |
+| `/applications/:id` | `PATCH` | `farmer` | Accept or Reject a worker application |
+| `/crop-scan` | `POST` | Any | AI-powered diagnosis (Authenticated, Multi-lingual) |
 
 ---
 

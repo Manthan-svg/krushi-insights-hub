@@ -15,6 +15,7 @@ import { useLocation } from "@/hooks/use-location";
 import WeatherWidget from "@/components/WeatherWidget";
 import { CheckCircle2, Star } from "lucide-react";
 import RatingModal from "@/components/RatingModal";
+import ApplicationsModal from "@/components/ApplicationsModal";
 
 const FarmerDashboard = () => {
   const { t, language } = useLanguage();
@@ -60,6 +61,7 @@ const FarmerDashboard = () => {
   });
 
   const [ratingTarget, setRatingTarget] = useState<{ jobId: string; workerId: string } | null>(null);
+  const [applicationTarget, setApplicationTarget] = useState<string | null>(null);
 
   const { mutate: completeJob } = useMutation({
     mutationFn: (jobId: string) => jobsApi.updateStatus(jobId, "completed"),
@@ -171,7 +173,12 @@ const FarmerDashboard = () => {
                     <div className="flex gap-4 mt-3 text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                       <span>₹{job.wages}{t.worker.perDay}</span>
                       <span>{job.duration} {t.common.days}</span>
-                      <span>{job.applicants} {t.farmer.applicants}</span>
+                      <button 
+                        onClick={() => setApplicationTarget(job.id)}
+                        className="text-primary font-black underline decoration-primary/20 underline-offset-2 hover:text-primary/80 transition-colors"
+                      >
+                        {job.applicants} {t.farmer.applicants}
+                      </button>
                     </div>
 
                     {job.status === "in_progress" && (
@@ -181,6 +188,23 @@ const FarmerDashboard = () => {
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         Mark as Complete & Rate
+                      </button>
+                    )}
+
+                    {job.status === "completed" && !job.hasBeenRated && (
+                      <button
+                        onClick={() => {
+                          const acceptedApp = allApplications.find((a: any) => a.job.id === job.id && a.status === "accepted");
+                          if (acceptedApp) {
+                            setRatingTarget({ jobId: job.id, workerId: acceptedApp.worker.id });
+                          } else {
+                            toast.error("No accepted worker found for this job");
+                          }
+                        }}
+                        className="w-full mt-4 h-10 rounded-xl bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm"
+                      >
+                        <Star className="w-4 h-4" />
+                        Rate Worker
                       </button>
                     )}
                   </CardContent>
@@ -199,6 +223,14 @@ const FarmerDashboard = () => {
           jobId={ratingTarget.jobId}
           workerId={ratingTarget.workerId}
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ["jobs"] })}
+        />
+      )}
+
+      {applicationTarget && (
+        <ApplicationsModal
+          isOpen={!!applicationTarget}
+          onClose={() => setApplicationTarget(null)}
+          jobId={applicationTarget}
         />
       )}
     </MobileLayout>

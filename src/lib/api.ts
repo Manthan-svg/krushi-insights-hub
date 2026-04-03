@@ -11,7 +11,7 @@ export const api = axios.create({
 
 // Attach JWT to every request if available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("krushi_token");
+  const token = sessionStorage.getItem("krushi_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,8 +23,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("krushi_token");
-      localStorage.removeItem("krushi_user");
+      sessionStorage.removeItem("krushi_token");
+      sessionStorage.removeItem("krushi_user");
+      sessionStorage.removeItem("krushi_role");
       // Redirect to home — let ProtectedRoute handle navigation
       window.location.href = "/";
     }
@@ -136,4 +137,13 @@ export const profileApi = {
 
   update: (data: Record<string, unknown>) =>
     api.patch("/profile", data).then((r) => r.data),
+};
+// ── WEATHER ──────────────────────────────────────────────────────────────────
+export const weatherApi = {
+  get: (lat: string, lon: string) => api.get(`/weather?lat=${lat}&lon=${lon}`).then(res => res.data),
+};
+
+// ── CROP SCAN ────────────────────────────────────────────────────────────────
+export const cropScanApi = {
+  scan: (data: { image: string; language: string }) => api.post("/crop-scan", data).then(res => res.data),
 };

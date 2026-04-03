@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import axios from "axios";
+import { ratingsApi } from "@/lib/api";
 
 interface RatingModalProps {
   isOpen: boolean;
@@ -29,7 +29,7 @@ const RatingModal = ({ isOpen, onClose, jobId, workerId, onSuccess }: RatingModa
 
     setIsSubmitting(true);
     try {
-      await axios.post("/api/ratings", {
+      await ratingsApi.create({
         jobId,
         workerId,
         stars,

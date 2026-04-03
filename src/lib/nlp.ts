@@ -35,12 +35,12 @@ export const parseJobFromSpeech = (text: string, lang: string = "en") => {
   }
 
   // Extract Location
-  const locMatch = normalizedText.match(/(near|in|at|pas|जवळ|मध्ये|येथे)\s+([A-Za-z]+|[अ-ज्ञ]+)/i);
-  if (locMatch) location = locMatch[2];
+  const locMatch = normalizedText.match(/\b(near|in|at)\b\s+([A-Za-z]+)|(pas|जवळ|मध्ये|येथे)\s+([अ-ज्ञ]+)/i);
+  if (locMatch) location = locMatch[2] || locMatch[4];
 
   // Keyword-based Title deduction
-  if (normalizedText.match(/harvest|katni|kapni|कापणी|कटाई/)) {
-    if (lang === "mr") title = "कापणीचे काम";
+  if (normalizedText.match(/harvest|katni|kapni|कापणी|कटाई|कामगार हवे आहेत/)) {
+    if (lang === "mr" || normalizedText.includes("कामगार हवे आहेत")) title = "कापणीचे काम";
     else if (lang === "hi") title = "कटाई का काम";
     else title = "Harvesting Job";
   } else if (normalizedText.match(/plant|bovni|perni|पेरणी|बुवाई/)) {

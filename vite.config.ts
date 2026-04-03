@@ -50,7 +50,11 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/localhost:3001\/api\/.*/i,
+            urlPattern: /^\/api\/auth\/me/i,
+            handler: "NetworkOnly",
+          },
+          {
+            urlPattern: /^\/api\/.*/i,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",

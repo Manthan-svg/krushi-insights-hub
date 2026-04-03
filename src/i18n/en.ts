@@ -9,7 +9,7 @@ export const en = {
   common: { save: "Save", cancel: "Cancel", submit: "Submit", loading: "Loading...", noData: "No data available", success: "Success!", error: "Something went wrong", language: "Language", settings: "Settings", status: { open: "Open", closed: "Closed", pending: "Pending", accepted: "Accepted", rejected: "Rejected" }, days: "days", rupees: "Rupees", rating: "Rating", phone: "Phone", requestedBy: "Requested by" },
   equipmentTypes: { tractor: "Tractor", harvester: "Harvester", plough: "Plough", sprayer: "Sprayer", seeder: "Seeder" },
   cropScan: { title: "Scan My Crop", uploadPrompt: "Take a photo or upload an image of the affected crop", analyse: "Analyse Crop", analysing: "Analysing with AI...", result: "Analysis Result", disease: "Disease Name", severity: "Severity Level", description: "Description", treatment: "Treatment Steps", precautions: "Precautions", scanAnother: "Scan Another", noImage: "Please select an image first", healthy: "Healthy Crop" },
-  weather: { rainWarning: "Rain expected soon. Post your harvesting jobs today to avoid delays!", postNow: "Post Job Now", today: "Today", tomorrow: "Tomorrow", clear: "Clear", rain: "Rain", clouds: "Cloudy", thunderstorm: "Thunderstorm", drizzle: "Drizzle", mist: "Mist", snow: "Snow" },
+  weather: { rainWarning: "Rain expected soon. Post your harvesting jobs today to avoid delays!", postNow: "Post Job Now", today: "Today", tomorrow: "Tomorrow", dayAfter: "Day After", clear: "Clear", rain: "Rain", clouds: "Cloudy", thunderstorm: "Thunderstorm", drizzle: "Drizzle", mist: "Mist", snow: "Snow" },
   stats: {
     title: "My Stats",
     jobsPosted: "Jobs Posted",

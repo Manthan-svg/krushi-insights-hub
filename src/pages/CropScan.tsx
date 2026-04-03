@@ -1,11 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { cropScanApi } from "@/lib/api";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, Upload, Loader2, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 
 interface ScanResult {
@@ -43,11 +43,11 @@ const CropScan = () => {
 
     setIsAnalysing(true);
     try {
-      const response = await axios.post("/api/crop-scan", {
-        image,
-        language
+      const response = await cropScanApi.scan({
+        image: image,
+        language: language,
       });
-      setResult(response.data);
+      setResult(response);
       toast.success(t.common.success);
     } catch (error) {
       console.error("AI Scan Error:", error);
@@ -56,6 +56,14 @@ const CropScan = () => {
       setIsAnalysing(false);
     }
   };
+
+  // Re-scan if language changes while we have an image and a result
+  // This ensures the AI content matches the UI language
+  useEffect(() => {
+    if (image && result && !isAnalysing) {
+      analyseCrop();
+    }
+  }, [language]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {

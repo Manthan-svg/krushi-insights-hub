@@ -9,7 +9,7 @@ export const mr = {
   common: { save: "जतन करा", cancel: "रद्द करा", submit: "सबमिट करा", loading: "लोड होत आहे...", noData: "डेटा उपलब्ध नाही", success: "यशस्वी!", error: "काहीतरी चूक झाली", language: "भाषा", settings: "सेटिंग्ज", status: { open: "खुले", closed: "बंद", pending: "प्रलंबित", accepted: "स्वीकारले", rejected: "नाकारले" }, days: "दिवस", rupees: "रुपये", rating: "रेटिंग", phone: "फोन", requestedBy: "विनंती केली" },
   equipmentTypes: { tractor: "ट्रॅक्टर", harvester: "हार्वेस्टर", plough: "नांगर", sprayer: "फवारणी यंत्र", seeder: "पेरणी यंत्र" },
   cropScan: { title: "पीक स्कॅन करा", uploadPrompt: "बाधित पिकाचा फोटो घ्या किंवा इमेज अपलोड करा", analyse: "पीक विश्लेषण करा", analysing: "AI द्वारे विश्लेषण होत आहे...", result: "विश्लेषण निकाल", disease: "रोगाचे नाव", severity: "गंभीरता पातळी", description: "वर्णन", treatment: "उपचार पायऱ्या", precautions: "खबरदारी", scanAnother: "दुसरे स्कॅन करा", noImage: "कृपया आधी एक इमेज निवडा", healthy: "निरोगी पीक" },
-  weather: { rainWarning: "लवकरच पावसाची शक्यता आहे. उशीर टाळण्यासाठी तुमची काढणीची कामे आजच पोस्ट करा!", postNow: "आता काम पोस्ट करा", today: "आज", tomorrow: "उद्या", clear: "स्वच्छ आकाश", rain: "पाऊस", clouds: "ढगाळ", thunderstorm: "विजांचा कडकडाट", drizzle: "रिमझिम", mist: "धुके", snow: "बर्फ" },
+  weather: { rainWarning: "लवकरच पावसाची शक्यता आहे. उशीर टाळण्यासाठी तुमची काढणीची कामे आजच पोस्ट करा!", postNow: "आता काम पोस्ट करा", today: "आज", tomorrow: "उद्या", dayAfter: "परवा", clear: "स्वच्छ आकाश", rain: "पाऊस", clouds: "ढगाळ", thunderstorm: "विजांचा कडकडाट", drizzle: "रिमझिम", mist: "धुके", snow: "बर्फ" },
   stats: {
     title: "माझे सांख्यिकी",
     jobsPosted: "पोस्ट केलेले काम",

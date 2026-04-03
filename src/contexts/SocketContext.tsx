@@ -36,6 +36,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       // Force refresh common lists to show the real-time updates
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["rentals"] });
+      queryClient.invalidateQueries({ queryKey: ["activity"] });
     });
 
     setSocket(socketInstance);

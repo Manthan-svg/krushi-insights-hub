@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { weatherApi } from "@/lib/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent } from "./ui/card";
 import { Cloud, CloudRain, Sun, CloudLightning, AlertTriangle, ArrowRight, CloudDrizzle, Wind, Snowflake } from "lucide-react";
@@ -13,15 +13,15 @@ const WeatherWidget = ({ lat, lon }: { lat?: number; lon?: number }) => {
   const { data: weatherData } = useQuery({
     queryKey: ["weather", lat, lon],
     queryFn: async () => {
-      const res = await axios.get(`/api/weather?lat=${lat}&lon=${lon}`);
-      return res.data;
+      const res = await weatherApi.get(lat!.toString(), lon!.toString());
+      return res;
     },
-    enabled: true,
+    enabled: !!lat && !!lon,
   });
 
   if (!weatherData) return null;
 
-  const hasRainSoon = weatherData.forecast.slice(0, 2).some(
+  const hasRainSoon = weatherData.forecast.slice(0, 3).some(
     (f: any) => f.main === "Rain" || f.main === "Thunderstorm" || f.main === "Drizzle"
   );
 
@@ -82,7 +82,7 @@ const WeatherWidget = ({ lat, lon }: { lat?: number; lon?: number }) => {
           <Card key={i} className="min-w-[110px] border-border shadow-none bg-card/50 shrink-0 rounded-2xl">
             <CardContent className="p-3 flex flex-col items-center gap-2">
               <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                {f.date === "Today" ? t.weather.today : f.date === "Tomorrow" ? t.weather.tomorrow : f.date}
+                {f.date === "Today" ? t.weather.today : f.date === "Tomorrow" ? t.weather.tomorrow : f.date === "Day After" ? t.weather.dayAfter : f.date}
               </span>
               <div className="p-2 bg-background rounded-xl">
                 {getWeatherIcon(f.main)}

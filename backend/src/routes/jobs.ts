@@ -19,6 +19,7 @@ router.get("/", async (req, res): Promise<void> => {
       include: {
         postedBy: { select: { id: true, name: true, email: true } },
         _count: { select: { applications: true } },
+        rating: { select: { id: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -61,6 +62,7 @@ router.get("/", async (req, res): Promise<void> => {
         postedBy: j.postedBy.name,
         postedById: j.postedById,
         applicants: j._count.applications,
+        hasBeenRated: !!j.rating,
         postedDate: j.createdAt.toISOString().split("T")[0],
         createdAt: j.createdAt,
         distance: (j as any).distance, // Include parsed distance

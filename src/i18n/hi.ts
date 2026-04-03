@@ -9,7 +9,7 @@ export const hi = {
   common: { save: "सहेजें", cancel: "रद्द करें", submit: "जमा करें", loading: "लोड हो रहा है...", noData: "कोई डेटा उपलब्ध नहीं", success: "सफलता!", error: "कुछ गलत हो गया", language: "भाषा", settings: "सेटिंग्स", status: { open: "खुला", closed: "बंद", pending: "लंबित", accepted: "स्वीकृत", rejected: "अस्वीकृत" }, days: "दिन", rupees: "रुपये", rating: "रेटिंग", phone: "फोन", requestedBy: "अनुरोध किया" },
   equipmentTypes: { tractor: "ट्रैक्टर", harvester: "हार्वेस्टर", plough: "हल", sprayer: "स्प्रेयर", seeder: "बीज बोने की मशीन" },
   cropScan: { title: "फसल स्कैन करें", uploadPrompt: "प्रभावित फसल का फोटो लें या इमेज अपलोड करें", analyse: "फसल का विश्लेषण करें", analysing: "AI द्वारा विश्लेषण किया जा रहा है...", result: "विश्लेषण परिणाम", disease: "रोग का नाम", severity: "गंभीरता स्तर", description: "विवरण", treatment: "उपचार के चरण", precautions: "सावधानियां", scanAnother: "दूसरा स्कैन करें", noImage: "कृपया पहले एक इमेज चुनें", healthy: "स्वस्थ फसल" },
-  weather: { rainWarning: "जल्द ही बारिश की संभावना है। देरी से बचने के लिए अपनी कटाई का काम आज ही पोस्ट करें!", postNow: "अभी काम पोस्ट करें", today: "आज", tomorrow: "कल", clear: "साफ आकाश", rain: "बारिश", clouds: "बादल", thunderstorm: "बिजली कड़कना", drizzle: "बूंदाबांदी", mist: "कोहरा", snow: "बर्फ" },
+  weather: { rainWarning: "जल्द ही बारिश की संभावना है। देरी से बचने के लिए अपनी कटाई का काम आज ही पोस्ट करें!", postNow: "अभी काम पोस्ट करें", today: "आज", tomorrow: "कल", dayAfter: "परसों", clear: "साफ आकाश", rain: "बारिश", clouds: "बादल", thunderstorm: "बिजली कड़कना", drizzle: "बूंदाबांदी", mist: "कोहरा", snow: "बर्फ" },
   stats: {
     title: "मेरे आंकड़े",
     jobsPosted: "पोस्ट किए गए काम",
