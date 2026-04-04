@@ -55,7 +55,7 @@ router.get("/", async (req, res): Promise<void> => {
         id: w.id,
         name: w.name,
         phone: w.phone,
-        location: w.workerProfile?.location || "",
+        location: w.workerProfile?.location || w.location || "",
         skills: w.workerProfile ? JSON.parse(w.workerProfile.skills as string) : [],
         experience: w.workerProfile?.experience || 0,
         rating: w.workerProfile?.rating || 0,

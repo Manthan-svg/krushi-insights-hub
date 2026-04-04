@@ -18,6 +18,7 @@ import ActivityPage from "./pages/ActivityPage";
 import ProfilePage from "./pages/ProfilePage";
 import CropScan from "./pages/CropScan";
 import FarmerStats from "./pages/farmer/FarmerStats";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -99,6 +100,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <FarmerStats />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <SettingsPage />
                   </ProtectedRoute>
                 }
               />

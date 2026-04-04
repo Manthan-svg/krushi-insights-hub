@@ -191,6 +191,23 @@ router.patch(
         data: { status },
       });
 
+      // Special Logic for Completion: Increment Worker Experience
+      if (status === "completed") {
+        const acceptedApp = await (prisma as any).application.findFirst({
+          where: { jobId: updated.id, status: "accepted" },
+          include: { worker: true }
+        });
+
+        if (acceptedApp) {
+          await (prisma as any).workerProfile.update({
+            where: { userId: acceptedApp.workerId },
+            data: { 
+              experience: { increment: updated.duration } 
+            }
+          });
+        }
+      }
+
       res.json({ id: updated.id, status: updated.status });
     } catch (err) {
       res.status(500).json({ error: "Failed to update job status" });

@@ -181,7 +181,10 @@ const ProfilePage = () => {
                 <p className="text-base font-black text-sky-900">{languageNames[language]}</p>
               </div>
             </button>
-            <button className="p-5 rounded-[28px] bg-indigo-500/10 border border-indigo-500/20 flex flex-col items-start gap-4 active:scale-95 transition-all group text-left w-full">
+            <button 
+              onClick={() => navigate("/settings")}
+              className="p-5 rounded-[28px] bg-indigo-500/10 border border-indigo-500/20 flex flex-col items-start gap-4 active:scale-95 transition-all group text-left w-full"
+            >
               <div className="w-10 h-10 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:rotate-12 transition-transform">
                 <Settings className="w-5 h-5 text-white" />
               </div>

@@ -17,6 +17,7 @@ model User {
   phone     String
   password  String
   role      String   // "farmer" | "worker" | "equipment_owner"
+  location  String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

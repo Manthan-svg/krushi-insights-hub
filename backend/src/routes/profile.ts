@@ -35,6 +35,7 @@ router.get(
         email: user.email,
         phone: user.phone,
         role: user.role,
+        location: user.location,
         createdAt: user.createdAt,
       };
 
@@ -85,8 +86,9 @@ router.patch(
         data: {
           ...(name && { name }),
           ...(phone && { phone }),
+          ...(location && { location }),
         },
-        select: { id: true, name: true, email: true, phone: true, role: true },
+        select: { id: true, name: true, email: true, phone: true, role: true, location: true },
       });
 
       // Update worker-specific profile fields
