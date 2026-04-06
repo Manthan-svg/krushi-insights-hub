@@ -80,9 +80,14 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       token,
       user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role },
     });
-  } catch (err) {
-    console.error("Register error:", err);
-    res.status(500).json({ error: "Registration failed" });
+  } catch (err: any) {
+    console.error("Register error:", {
+      message: err.message,
+      code: err.code,
+      meta: err.meta,
+      stack: err.stack,
+    });
+    res.status(500).json({ error: "Registration failed: " + (err.message || "Unknown error") });
   }
 });
 

@@ -1,22 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
 
 const Signup = () => {
+  const { signup, selectedRole } = useAuth();
+  const [role, setRole] = useState<UserRole>((selectedRole as UserRole) || "farmer");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signup } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (selectedRole) {
+      setRole(selectedRole as UserRole);
+    }
+  }, [selectedRole]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +33,7 @@ const Signup = () => {
     }
     setIsLoading(true);
     try {
-      await signup(name, email, phone, password);
+      await signup(name, email, phone, password, role);
       navigate("/dashboard");
     } catch (err: unknown) {
       const msg =
@@ -38,8 +45,14 @@ const Signup = () => {
     }
   };
 
+  const roles: { key: UserRole; emoji: string; label: string }[] = [
+    { key: "farmer", emoji: "👨‍🌾", label: t.roles.farmer },
+    { key: "worker", emoji: "👷", label: t.roles.worker },
+    { key: "equipment_owner", emoji: "🚜", label: t.roles.equipmentOwner },
+  ];
+
   return (
-    <div className="min-h-screen bg-background flex flex-col px-6 py-8">
+    <div className="min-h-screen bg-background flex flex-col px-6 py-8 pb-12">
       <button
         onClick={() => navigate("/login")}
         className="text-muted-foreground text-sm mb-8 self-start min-h-[44px]"
@@ -51,10 +64,38 @@ const Signup = () => {
         <div className="text-center mb-8">
           <span className="text-5xl">🌾</span>
           <h1 className="text-2xl font-bold mt-3 text-foreground">{t.auth.signup}</h1>
+          <p className="text-muted-foreground text-sm mt-1">Join the KrushiShetra community</p>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
-          <div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground block">I am a...</label>
+            <div className="grid grid-cols-1 gap-2">
+              {roles.map((r) => (
+                <button
+                  key={r.key}
+                  type="button"
+                  onClick={() => setRole(r.key)}
+                  className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
+                    role === r.key
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border bg-card text-muted-foreground"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{r.emoji}</span>
+                    <span className={`font-medium ${role === r.key ? "text-foreground" : ""}`}>
+                      {r.label}
+                    </span>
+                  </div>
+                  {role === r.key && <Check className="w-5 h-5 text-primary" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-2">
             <label className="text-sm font-medium text-foreground mb-1 block">{t.auth.name}</label>
             <Input
               value={name}
@@ -115,7 +156,7 @@ const Signup = () => {
           </div>
           <Button
             type="submit"
-            className="w-full h-12 rounded-xl text-base font-semibold mt-2"
+            className="w-full h-12 rounded-xl text-base font-semibold mt-4 shadow-lg shadow-primary/20"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -129,7 +170,7 @@ const Signup = () => {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-8">
           {t.auth.hasAccount}{" "}
           <button
             onClick={() => navigate("/login")}

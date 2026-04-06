@@ -18,7 +18,7 @@ interface AuthContextType {
   loading: boolean;
   setSelectedRole: (role: UserRole | null) => void;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, phone: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, phone: string, password: string, role?: UserRole) => Promise<void>;
   logout: () => void;
 }
 
@@ -80,9 +80,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signup = useCallback(
-    async (name: string, email: string, phone: string, password: string) => {
-      if (!selectedRole) throw new Error("No role selected");
-      const data = await authApi.register({ name, email, phone, password, role: selectedRole });
+    async (name: string, email: string, phone: string, password: string, role?: UserRole) => {
+      const finalRole = role || selectedRole || "farmer";
+      const data = await authApi.register({ name, email, phone, password, role: finalRole });
       sessionStorage.setItem("krushi_token", data.token);
       sessionStorage.setItem("krushi_user", JSON.stringify(data.user));
       sessionStorage.setItem("krushi_role", data.user.role);
