@@ -19,6 +19,7 @@ import ProfilePage from "./pages/ProfilePage";
 import CropScan from "./pages/CropScan";
 import FarmerStats from "./pages/farmer/FarmerStats";
 import SettingsPage from "./pages/SettingsPage";
+import CreateEquipment from "./pages/equipment/CreateEquipment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -108,6 +109,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SettingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create-equipment"
+                element={
+                  <ProtectedRoute>
+                    <CreateEquipment />
                   </ProtectedRoute>
                 }
               />

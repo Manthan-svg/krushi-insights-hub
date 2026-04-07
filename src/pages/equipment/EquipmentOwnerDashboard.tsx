@@ -72,7 +72,7 @@ const EquipmentOwnerDashboard = () => {
         </div>
 
         <button
-          onClick={() => navigate("/search")}
+          onClick={() => navigate("/create-equipment")}
           className="w-full flex items-center gap-3 p-4 rounded-2xl bg-primary text-primary-foreground active:scale-[0.98] transition-transform min-h-[60px]"
         >
           <Plus className="w-5 h-5" />
